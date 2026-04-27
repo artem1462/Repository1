@@ -9,6 +9,8 @@ import json
 import pickle
 import h5py
 
+# Другая версия
+
 def first():
     n = 100
     x = np.linspace(-np.pi, np.pi, num=n)
