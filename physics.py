@@ -52,8 +52,7 @@ def total_energy(parts, springs):
     return E_kin + E_pot
 
 # симуляция колебаний струны
-def string(num, length, tense, k, t, math_dt, anim_dt, 
-           anim_speed=1, anim_show={}, fixate_edges=True, 
+def string(num, length, tense, k, t, math_dt, fixate_edges=True, 
            initial_velocity=300, excited_particle=1, damping=0.0, count_energy=False):
     parts = []
     parts.append(np.array([[i*length/(num-1) - length/2, 0] for i in range(num)]))     # координаты частиц равномерно распределённых по длине струны вдоль оси x
@@ -69,14 +68,8 @@ def string(num, length, tense, k, t, math_dt, anim_dt,
     
     traj = time_process(parts, springs, math_dt, t, {0, num-1} if fixate_edges else {}, damping)
     
-    if count_energy:
-        energies = []
-        for state in traj:
-            energies.append(total_energy(state, springs))
-        plt.plot(energies)
-        plt.xlabel("шаг")
-        plt.ylabel("полная энергия")
-        plt.title("Сохранение энергии")
-        plt.savefig("energy.png")
-
-    animate_particles(traj, t/anim_speed, anim_dt, anim_show)
+    if count_energy:    # зависимость энергии системы от времени
+        energies = [total_energy(state, springs) for state in traj]
+        return traj, energies
+    else:
+        return traj

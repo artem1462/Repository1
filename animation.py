@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 
 # анимация частиц
-def animate_particles(trajectory, t, dt=0.04, show={}):
+def animate_particles(trajectory, t, speed=1,  dt=0.04, show={}):
     minx = np.min(trajectory[0][0][..., 0])
     maxx = np.max(trajectory[0][0][..., 0])
     miny = np.min(np.array([parts[0][...,1] for parts in trajectory]), axis=(0,1))
@@ -14,7 +14,7 @@ def animate_particles(trajectory, t, dt=0.04, show={}):
     ax.set_xlim(left=minx, right=maxx)
     ax.set_ylim(bottom=miny, top=maxy)
 
-    m = int(t/dt)                               # количество кадров
+    m = int((t/speed)/dt)                       # количество кадров
     n = len(trajectory) // m                    # рисоваться будет каждый n-ый кадр
 
     if 'show_string_not' not in show:           # рисовать линию соединяющую точки по порядку
