@@ -11,7 +11,7 @@ def generate_particles(num):
     return (crds, vlcs, accs, mass, num)
 
 # расчёт движения частиц
-def process_particles(parts, springs, dt, fixed):
+def process_particles(parts, springs, dt, fixed, damping=0.0):
     crds, vlcs, accs, mass, num = parts
 
     # векторы соединяющие частицы и расстояния между ними
@@ -21,18 +21,18 @@ def process_particles(parts, springs, dt, fixed):
     # расчёт ускорения
     accs = -(np.sum(vecs*(1 - springs[0]/(dist + np.identity(num)))*springs[1], axis=2)*dt/mass.T).T * np.matlib.repmat(fixed, 2, 1).T
     # расчёт скоростей и координат
-    vlcs = vlcs + accs*dt
+    vlcs = vlcs + accs*dt - damping*vlcs*dt
     crds = crds + vlcs*dt
 
     return (crds, vlcs, accs, mass, num)
 
 # расчёт траекторий движения частиц за время t
-def time_process(parts, springs, dt, t, fixed_points):
+def time_process(parts, springs, dt, t, fixed_points, damping=0.0):
     n = int(t/dt)                               # количество шагов
     trajectory = [parts]
     
     for i in range(n):
-        parts = process_particles(parts, springs, dt, np.array([0 if i in fixed_points else 1 for i in range(parts[4])]))
+        parts = process_particles(parts, springs, dt, np.array([0 if i in fixed_points else 1 for i in range(parts[4])]), damping)
         trajectory.append(parts)
 
     return trajectory
@@ -95,7 +95,7 @@ def update(i, ax, tr, n, show):
         ax.collections[colcount].V = tr[i*n][1][...,1]
 
 # симуляция колебаний струны
-def string(num, length, tense, k, t, math_dt, anim_dt, anim_speed=1, anim_show={}, fixate_edges=True, count_energy=False):
+def string(num, length, tense, k, t, math_dt, anim_dt, anim_speed=1, anim_show={}, fixate_edges=True, damping=0.0, count_energy=False):
     parts = []
     parts.append(np.array([[i*length/(num-1) - length/2, 0] for i in range(num)]))     # координаты частиц равномерно распределённых по длине струны вдоль оси x
     parts.append(np.zeros((num,2)))                                                    # начальные скорости равны 0
@@ -108,7 +108,7 @@ def string(num, length, tense, k, t, math_dt, anim_dt, anim_speed=1, anim_show={
     springs = np.array([[[length/(num-1)*tense if i-j == 1 or i-j == -1 else 0.0 for i in range(num)] for j in range(num)],    # длины
                         [[k if i-j == 1 or i-j == -1 else 0.0 for i in range(num)] for j in range(num)]])                      # жёсткости
     
-    traj = time_process(parts, springs, math_dt, t, {0, num-1} if fixate_edges else {})
+    traj = time_process(parts, springs, math_dt, t, {0, num-1} if fixate_edges else {}, damping)
     
     if count_energy:
         energies = []
@@ -123,4 +123,4 @@ def string(num, length, tense, k, t, math_dt, anim_dt, anim_speed=1, anim_show={
     animate_particles(traj, t/anim_speed, anim_dt, anim_show)
 
 
-string(100, 10000, 0.5, 18000, 120, 0.03819, 0.04, anim_speed=6, count_energy=True)
+string(100, 10000, 0.5, 18000, 120, 0.01, 0.04, anim_speed=6, damping=0.1, count_energy=True)
