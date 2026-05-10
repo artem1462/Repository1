@@ -37,6 +37,22 @@ def time_process(parts, springs, dt, t, fixed_points):
 
     return trajectory
 
+# расчёт полной механической энергии системы
+def total_energy(parts, springs):
+    crds, vlcs, mass, = parts[0], parts[1], parts[3]
+    # кинетическая энергия
+    E_kin = 0.5 * np.sum(mass * vlcs**2)
+    
+    # потенциальная энергия пружин
+    vecs = np.array([np.diff(np.matlib.meshgrid(crds[...,0], crds[...,0]), axis=0)[0], 
+                     np.diff(np.matlib.meshgrid(crds[...,1], crds[...,1]), axis=0)[0]])
+    dist = np.sqrt(np.sum(vecs**2, axis=0))
+
+    stretch = dist - springs[0]  # растяжение относительно длины покоя
+    E_pot = 0.5 * np.sum(springs[1] * stretch**2)
+    return E_kin + E_pot
+
+
 # анимация частиц
 def animate_particles(trajectory, t, dt=0.04, show={}):
     minx = np.min(trajectory[0][0][..., 0])
@@ -79,7 +95,7 @@ def update(i, ax, tr, n, show):
         ax.collections[colcount].V = tr[i*n][1][...,1]
 
 # симуляция колебаний струны
-def string(num, length, tense, k, t, math_dt, anim_dt, anim_speed=1, anim_show={}, fixate_edges=True):
+def string(num, length, tense, k, t, math_dt, anim_dt, anim_speed=1, anim_show={}, fixate_edges=True, count_energy=False):
     parts = []
     parts.append(np.array([[i*length/(num-1) - length/2, 0] for i in range(num)]))     # координаты частиц равномерно распределённых по длине струны вдоль оси x
     parts.append(np.zeros((num,2)))                                                    # начальные скорости равны 0
@@ -93,7 +109,18 @@ def string(num, length, tense, k, t, math_dt, anim_dt, anim_speed=1, anim_show={
                         [[k if i-j == 1 or i-j == -1 else 0.0 for i in range(num)] for j in range(num)]])                      # жёсткости
     
     traj = time_process(parts, springs, math_dt, t, {0, num-1} if fixate_edges else {})
+    
+    if count_energy:
+        energies = []
+        for state in traj:
+            energies.append(total_energy(state, springs))
+        plt.plot(energies)
+        plt.xlabel("шаг")
+        plt.ylabel("полная энергия")
+        plt.title("Сохранение энергии")
+        plt.savefig("energy.png")
+
     animate_particles(traj, t/anim_speed, anim_dt, anim_show)
 
 
-string(100, 10000, 0.5, 18000, 120, 0.01, 0.04, anim_speed=6, )
+string(100, 10000, 0.5, 18000, 120, 0.03819, 0.04, anim_speed=6, count_energy=True)
