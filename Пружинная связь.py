@@ -79,11 +79,13 @@ def update(i, ax, tr, n, show):
         ax.collections[colcount].V = tr[i*n][1][...,1]
 
 # симуляция колебаний струны
-def string(num, length, tense, k, t, math_dt, anim_dt, anim_speed=1, anim_show={}, fixate_edges=True):
+def string(num, length, tense, k, t, math_dt, anim_dt, 
+           anim_speed=1, anim_show={}, fixate_edges=True, 
+           initial_velocity=300, excited_particle=1):
     parts = []
     parts.append(np.array([[i*length/(num-1) - length/2, 0] for i in range(num)]))     # координаты частиц равномерно распределённых по длине струны вдоль оси x
     parts.append(np.zeros((num,2)))                                                    # начальные скорости равны 0
-    parts[1][1][1] = 300                                                               # кроме второй слева 
+    parts[1][excited_particle][1] = initial_velocity                                   # кроме номера excited_particle слева 
     parts.append(np.zeros((num,2)))                                                    # начальные ускорения равны 0
     parts.append(np.ones((num,2)))                                                     # массы равны 1
     parts.append(num)                                                                  # количество частиц
