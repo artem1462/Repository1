@@ -9,4 +9,4 @@ plt.ylabel("полная энергия")
 plt.title("Сохранение энергии")
 plt.savefig("energy.png")
 
-animate_particles(traj, 120, speed=6) #внутри animate_particles вызывается plt.show() и показываются все созданные графики
+animate_particles(traj, 120, speed=6) # внутри animate_particles вызывается plt.show() и показываются все созданные графики
