@@ -1,12 +1,17 @@
 from physics import *
 from animation import *
 
-traj, energies = string(100, 10000, 0.5, 18000, 120, 0.01, damping=0.1, count_energy=True)
+n = 10
 
-plt.plot(energies)
-plt.xlabel("шаг")
-plt.ylabel("полная энергия")
-plt.title("Сохранение энергии")
-plt.savefig("energy.png")
+parts, springs = generate_membrane(n, 10, 100000)
 
-animate_particles(traj, 120, speed=6) # внутри animate_particles вызывается plt.show() и показываются все созданные графики
+fixate = set()
+for i in range(n):
+    fixate.add(i)
+    fixate.add(n*n-i)
+    fixate.add(i*n)
+    fixate.add((i+1)*n-1)
+               
+traj = time_process(parts, springs, 0.01, 100, fixate)
+animate_particles(traj, 100, speed=1, show={'membrane'})
+animate_particles(traj, 100, speed=1, show={'show_points', 'show_string_not'})

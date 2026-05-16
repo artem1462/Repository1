@@ -73,3 +73,29 @@ def string(num, length, tense, k, t, math_dt, fixate_edges=True,
         return traj, energies
     else:
         return traj
+
+def generate_membrane(n, spacing, k, tense=1.0, initial_velocity=[0, 300]):
+    """Создаёт двумерную сетку NxN частиц"""
+    num = n * n
+    x = np.linspace(0, spacing * (n-1), n)
+    y = np.linspace(0, spacing * (n-1), n)
+    xx, yy = np.meshgrid(x, y)
+    crds = np.column_stack([xx.ravel(), yy.ravel()])
+    vlcs = np.zeros((num, 2))
+    vlcs[(num + n)//2] = initial_velocity
+    accs = np.zeros((num, 2))
+    mass = np.ones((num, 2))
+    
+    """Создаёт матрицу пружин, соединены соседние точки по горизонтали и вертикали"""
+    springs = np.zeros((2, num, num))   
+    for i in range(num-1):
+        if (i+1)%n != 0:
+            springs[0, i, i+1] = spacing*tense
+            springs[1, i, i+1] = k
+        if i+n < num:
+            springs[0, i, i+n] = spacing*tense
+            springs[1, i, i+n] = k
+    springs[0] = springs[0] + springs[0].T
+    springs[1] = springs[1] + springs[1].T
+
+    return [(crds, vlcs, accs, mass, num), springs]                                                   
